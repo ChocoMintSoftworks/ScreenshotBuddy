@@ -4,6 +4,10 @@ using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using UnityEngine.Rendering;
+#if URP_AVAILABLE
+using UnityEngine.Rendering.Universal;
+#endif
 
 namespace ChocoMintSoftworks.ScreenshotBuddy
 {
@@ -24,7 +28,10 @@ namespace ChocoMintSoftworks.ScreenshotBuddy
     public static bool enableTransparency = false;
     public static string[] superSampleOptions = new string[] { "1x", "2x", "3x", "4x" };
     public static int selectedSuperSample = 0;
+    public static bool disableOverlayCameras = false;
     private static bool ppOriginalState = false;
+    private static bool enableGameLikeCamera = false;
+    private static bool previousGridSetting = false;
 
     public static Color32 overlayColor = new Color32(255, 0, 0, 80);
 
@@ -58,6 +65,7 @@ namespace ChocoMintSoftworks.ScreenshotBuddy
       selectedMsaaSamples = EditorGUILayout.Popup("MSAA:", selectedMsaaSamples, availableMsaaSamples);
       selectedSuperSample = EditorGUILayout.Popup("Supersample:", selectedSuperSample, superSampleOptions);
       enableTransparency = GUILayout.Toggle(enableTransparency, "Enable Transparency");
+      disableOverlayCameras = GUILayout.Toggle(disableOverlayCameras, "Disable Overlay Cameras");
       if (enableTransparency)
       {
         GUILayout.Label("Notice: Enabling transparency disables post processing due to a unity bug.", EditorStyles.label);
@@ -75,6 +83,10 @@ namespace ChocoMintSoftworks.ScreenshotBuddy
       if (GUILayout.Button("Show Screenshot Folder", GUILayout.ExpandWidth(false)))
       {
         OpenScreenshotFolder();
+      }
+      if (GUILayout.Button("Toggle Camera Mode", GUILayout.ExpandWidth(false)))
+      {
+        ToggleCameraMode();
       }
       GUILayout.EndHorizontal();
 
@@ -151,7 +163,8 @@ namespace ChocoMintSoftworks.ScreenshotBuddy
         DestroyImmediate(cam.targetTexture);
       }
 
-      var renderDesc = new RenderTextureDescriptor(resWidth * GetSuperSampleValue(), resHeight * GetSuperSampleValue(), RenderTextureFormat.ARGB32, 32);
+      var renderDesc = new RenderTextureDescriptor(resWidth * GetSuperSampleValue(), resHeight * GetSuperSampleValue(), RenderTextureFormat.ARGB32, 24);
+      renderDesc.sRGB = true;
 
       switch (selectedMsaaSamples)
       {
@@ -186,6 +199,13 @@ namespace ChocoMintSoftworks.ScreenshotBuddy
       cam.targetTexture = RenderTexture.GetTemporary(renderDesc);
       RenderTexture renderTexture = cam.targetTexture;
 
+#if URP_AVAILABLE
+      if (IsURP() && disableOverlayCameras)
+      {
+        cam.GetUniversalAdditionalCameraData().cameraStack.Clear();
+      }
+#endif
+
       cam.Render();
 
       if (renderTexture == null)
@@ -201,17 +221,6 @@ namespace ChocoMintSoftworks.ScreenshotBuddy
       RenderTexture.active = renderTexture;
 
       outputTexture.ReadPixels(new Rect(0, 0, width, height), 0, 0);
-
-      // Convert to srgb if using linear color space
-      if (QualitySettings.activeColorSpace == ColorSpace.Linear)
-      {
-        Color[] pixels = outputTexture.GetPixels();
-        for (int p = 0; p < pixels.Length; p++)
-        {
-          pixels[p] = pixels[p].gamma;
-        }
-        outputTexture.SetPixels(pixels);
-      }
       outputTexture.Apply();
 
       // Dowsample image in half steps, otherwise the end result will be very aliased
@@ -310,6 +319,46 @@ namespace ChocoMintSoftworks.ScreenshotBuddy
     }
 
 
+    private static void ToggleCameraMode()
+    {
+      SceneView sw = SceneView.lastActiveSceneView;
+
+      if (sw == null)
+      {
+        Debug.LogError("no scene view found. Make sure you have a scene view window opened.");
+        return;
+      }
+
+      Camera cam = sw.camera;
+
+      if (cam == null)
+      {
+        Debug.LogError("no camera attached to current scene view.");
+        return;
+      }
+
+      if (!enableGameLikeCamera)
+      {
+        previousGridSetting = sw.showGrid;
+        enableGameLikeCamera = true;
+        cam.cameraType = CameraType.Game;
+        sw.showGrid = false;
+#if URP_AVAILABLE
+      if (IsURP() && disableOverlayCameras)
+      {
+        cam.GetUniversalAdditionalCameraData().cameraStack.Clear();
+      }
+#endif
+      }
+      else
+      {
+        sw.showGrid = previousGridSetting;
+        enableGameLikeCamera = false;
+        cam.cameraType = CameraType.SceneView;
+      }
+
+    }
+
     // Original source of the texture resizing code:
     // https://forum.unity.com/threads/how-to-resize-scale-down-texture-without-losing-quality.976965/
     public static Texture2D RenderMaterial(ref Material material, Vector2Int resolution)
@@ -341,6 +390,11 @@ namespace ChocoMintSoftworks.ScreenshotBuddy
       string sample = superSampleOptions[selectedSuperSample].Substring(0, 1);
       return int.Parse(sample);
     }
+
+    private static bool IsURP()
+    {
+      string assetTypeURP = "UniversalRenderPipelineAsset";
+      return GraphicsSettings.renderPipelineAsset.GetType().Name.Contains(assetTypeURP);
+    }
   }
 }
-

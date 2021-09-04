@@ -5,6 +5,7 @@ Tested and coded using Unity 2020.3 LTS.
 * Screenshots directly from your scene view camera
 * Freely choose the resolution
 * Downsample for even better AA than the max 8x MSAA
+* Use Game View PP features like DOF (using the Toggle Camera Mode button)
 * Save as PNG, JPG (with configurable quality) or TGA
 * Save transparent screenshots (for example, in prefab view)
 * Framing Overlay that takes the ratio directly from your choosen resolution

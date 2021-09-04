@@ -12,7 +12,7 @@ Tested and coded using Unity 2020.3 LTS.
 ![UI Screenshot](Documentation~/ui_screenshot.png)
 
 # Usage
-You can find the tool under Windows/Screenshot Buddy. Position your scene view
+You can find the tool under Window/ScreenshotBuddy. Position your scene view
 the way you want, then set your settings and click the "Take Screenshot" button.
 
 # Known Issues

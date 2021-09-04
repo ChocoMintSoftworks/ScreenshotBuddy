@@ -1,0 +1,15 @@
+{
+  "name": "com.chocomintsoftworks.screenshotbuddy",
+  "version": "1.0.0",
+  "displayName": "Screenshot Buddy",
+  "description": "A little tool to take (highres) screenshots via the scene view",
+  "unity": "2020.3",
+ "keywords": [
+    "screenshot",
+    "sceneview"
+  ],
+  "author": {
+    "name": "ChocoMint Softworks",
+    "email": "chocomint@rungelrath.com"
+  }
+}

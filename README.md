@@ -1,6 +1,8 @@
 # ScreenshotBuddy
 A unity editor tool to take (high res) screenshots from the scene view.
 Tested and coded using Unity 2020.3 LTS.
+This package was designed using Unity's URP/HDRP. Legacy renderer support has NOT
+been tested, so assume the worst.
 # Features
 * Screenshots directly from your scene view camera
 * Freely choose the resolution

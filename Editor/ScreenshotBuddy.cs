@@ -456,19 +456,19 @@ namespace ChocoMintSoftworks.ScreenshotBuddy
 
     private static void SaveColor(string key, Color32 value)
     {
-      EditorPrefs.SetFloat(SettingsPrefix() + key + "_R", value.r);
-      EditorPrefs.SetFloat(SettingsPrefix() + key + "_G", value.g);
-      EditorPrefs.SetFloat(SettingsPrefix() + key + "_B", value.b);
-      EditorPrefs.SetFloat(SettingsPrefix() + key + "_A", value.a);
+      EditorPrefs.SetInt(SettingsPrefix() + key + "_R", value.r);
+      EditorPrefs.SetInt(SettingsPrefix() + key + "_G", value.g);
+      EditorPrefs.SetInt(SettingsPrefix() + key + "_B", value.b);
+      EditorPrefs.SetInt(SettingsPrefix() + key + "_A", value.a);
     }
 
     private static Color32 LoadColor(string key)
     {
-      Color32 loadedColor = new Color(
-      EditorPrefs.GetFloat(SettingsPrefix() + key + "_R", 1.0f),
-      EditorPrefs.GetFloat(SettingsPrefix() + key + "_G", 0.0f),
-      EditorPrefs.GetFloat(SettingsPrefix() + key + "_B", 0.0f),
-      EditorPrefs.GetFloat(SettingsPrefix() + key + "_A", 0.4f));
+      Color32 loadedColor = new Color32(
+      (byte)EditorPrefs.GetInt(SettingsPrefix() + key + "_R", 255),
+      (byte)EditorPrefs.GetInt(SettingsPrefix() + key + "_G", 0),
+      (byte)EditorPrefs.GetInt(SettingsPrefix() + key + "_B", 0),
+      (byte)EditorPrefs.GetInt(SettingsPrefix() + key + "_A", 80));
       return loadedColor;
     }
 

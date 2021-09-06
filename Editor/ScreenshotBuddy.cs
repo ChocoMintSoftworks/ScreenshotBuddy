@@ -41,9 +41,17 @@ namespace ChocoMintSoftworks.ScreenshotBuddy
       GetWindow<ScreenshotBuddy>("ScreenshotBuddy");
     }
 
+    // Load settings here. Using OnEnable because Awake does not 
+    // trigger on script recompilation
+    public void OnEnable()
+    {
+      LoadAllSettings();
+    }
+
     ////// RENDER GUI HERE
     void OnGUI()
     {
+      EditorGUI.BeginChangeCheck();
       EditorStyles.label.wordWrap = true;
       GUILayout.Label("Screenshot Settings", EditorStyles.boldLabel);
       resWidth = EditorGUILayout.IntField("Width:", resWidth);
@@ -89,7 +97,6 @@ namespace ChocoMintSoftworks.ScreenshotBuddy
         ToggleCameraMode();
       }
       GUILayout.EndHorizontal();
-
       GUILayout.Label("Resolution Presets", EditorStyles.boldLabel);
       GUILayout.BeginHorizontal();
       if (GUILayout.Button("1080p", GUILayout.ExpandWidth(false)))
@@ -102,11 +109,11 @@ namespace ChocoMintSoftworks.ScreenshotBuddy
       }
       if (GUILayout.Button("2160p", GUILayout.ExpandWidth(false)))
       {
-        SetResolutionPreset(3840,2160);
+        SetResolutionPreset(3840, 2160);
       }
       if (GUILayout.Button("Instagram Square", GUILayout.ExpandWidth(false)))
       {
-        SetResolutionPreset(1080,1080);
+        SetResolutionPreset(1080, 1080);
       }
       GUILayout.EndHorizontal();
 
@@ -131,6 +138,11 @@ namespace ChocoMintSoftworks.ScreenshotBuddy
 
       overlayColor = EditorGUILayout.ColorField("Overlay color: ", overlayColor);
 
+      if (EditorGUI.EndChangeCheck())
+      {
+        // Saving everything at once, for now.
+        SaveAllSettings();
+      }
     }
 
     static void OpenScreenshotFolder()
@@ -239,7 +251,6 @@ namespace ChocoMintSoftworks.ScreenshotBuddy
       var outputTexture = new Texture2D(width, height, enableTransparency ? TextureFormat.ARGB32 : TextureFormat.RGB24, false);
 
       RenderTexture.active = renderTexture;
-
       outputTexture.ReadPixels(new Rect(0, 0, width, height), 0, 0);
       outputTexture.Apply();
 
@@ -421,6 +432,70 @@ namespace ChocoMintSoftworks.ScreenshotBuddy
     {
       string assetTypeURP = "UniversalRenderPipelineAsset";
       return GraphicsSettings.renderPipelineAsset.GetType().Name.Contains(assetTypeURP);
+    }
+
+    private static string SettingsPrefix()
+    {
+      return PlayerSettings.companyName + "." + PlayerSettings.productName + ".";
+    }
+
+    private static void SaveInt(string key, int value)
+    {
+      EditorPrefs.SetInt(SettingsPrefix() + key, value);
+    }
+
+    private static void SaveBool(string key, bool value)
+    {
+      EditorPrefs.SetBool(SettingsPrefix() + key, value);
+    }
+
+    private static void SaveString(string key, string value)
+    {
+      EditorPrefs.SetString(SettingsPrefix() + key, value);
+    }
+
+    private static void SaveColor(string key, Color32 value)
+    {
+      EditorPrefs.SetFloat(SettingsPrefix() + key + "_R", value.r);
+      EditorPrefs.SetFloat(SettingsPrefix() + key + "_G", value.g);
+      EditorPrefs.SetFloat(SettingsPrefix() + key + "_B", value.b);
+      EditorPrefs.SetFloat(SettingsPrefix() + key + "_A", value.a);
+    }
+
+    private static Color32 LoadColor(string key)
+    {
+      Color32 loadedColor = new Color(
+      EditorPrefs.GetFloat(SettingsPrefix() + key + "_R", 1.0f),
+      EditorPrefs.GetFloat(SettingsPrefix() + key + "_G", 0.0f),
+      EditorPrefs.GetFloat(SettingsPrefix() + key + "_B", 0.0f),
+      EditorPrefs.GetFloat(SettingsPrefix() + key + "_A", 0.4f));
+      return loadedColor;
+    }
+
+    private static void SaveAllSettings() {
+      SaveInt("resWidth", resWidth);
+      SaveInt("resHeight", resHeight);
+      SaveInt("jpgQuality", jpgQuality);
+      SaveInt("selectedFormat", selectedFormat);
+      SaveInt("selectedMsaaSamples", selectedMsaaSamples);
+      SaveInt("selectedSuperSample", selectedSuperSample);
+      SaveBool("disableOverlayCameras", disableOverlayCameras);
+      SaveBool("enableTransparency", enableTransparency);
+      SaveString("userFilePrefix", userFilePrefix);
+      SaveColor("overlayColor", overlayColor);
+    }
+
+    private static void LoadAllSettings() {
+      resWidth = EditorPrefs.GetInt(SettingsPrefix() + "resWidth", 1920);
+      resHeight = EditorPrefs.GetInt(SettingsPrefix() + "resHeight", 1080);
+      jpgQuality = EditorPrefs.GetInt(SettingsPrefix() + "jpgQuality", 100);
+      selectedFormat = EditorPrefs.GetInt(SettingsPrefix() + "selectedFormat", 0);
+      selectedMsaaSamples = EditorPrefs.GetInt(SettingsPrefix() + "selectedMsaaSamples", 3);
+      selectedSuperSample = EditorPrefs.GetInt(SettingsPrefix() + "selectedSuperSample", 0);
+      disableOverlayCameras = EditorPrefs.GetBool(SettingsPrefix() + "disableOverlayCameras", false);
+      enableTransparency = EditorPrefs.GetBool(SettingsPrefix() + "enableTransparency", false);
+      userFilePrefix = EditorPrefs.GetString(SettingsPrefix() + "userFilePrefix", "screenshot");
+      overlayColor = LoadColor("overlayColor");
     }
   }
 }

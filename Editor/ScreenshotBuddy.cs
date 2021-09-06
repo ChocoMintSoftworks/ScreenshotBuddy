@@ -90,6 +90,26 @@ namespace ChocoMintSoftworks.ScreenshotBuddy
       }
       GUILayout.EndHorizontal();
 
+      GUILayout.Label("Resolution Presets", EditorStyles.boldLabel);
+      GUILayout.BeginHorizontal();
+      if (GUILayout.Button("1080p", GUILayout.ExpandWidth(false)))
+      {
+        SetResolutionPreset(1920, 1080);
+      }
+      if (GUILayout.Button("1440p", GUILayout.ExpandWidth(false)))
+      {
+        SetResolutionPreset(2560, 1440);
+      }
+      if (GUILayout.Button("2160p", GUILayout.ExpandWidth(false)))
+      {
+        SetResolutionPreset(3840,2160);
+      }
+      if (GUILayout.Button("Instagram Square", GUILayout.ExpandWidth(false)))
+      {
+        SetResolutionPreset(1080,1080);
+      }
+      GUILayout.EndHorizontal();
+
       GUILayout.Label("Framing Overlay", EditorStyles.boldLabel);
 
       GUILayout.BeginHorizontal();
@@ -273,6 +293,12 @@ namespace ChocoMintSoftworks.ScreenshotBuddy
       return true;
     }
 
+    public static void SetResolutionPreset(int width, int height)
+    {
+      resWidth = width;
+      resHeight = height;
+    }
+
     public static void EnableOverlay()
     {
       if (!overlayEnabled)
@@ -344,10 +370,10 @@ namespace ChocoMintSoftworks.ScreenshotBuddy
         cam.cameraType = CameraType.Game;
         sw.showGrid = false;
 #if URP_AVAILABLE
-      if (IsURP() && disableOverlayCameras)
-      {
-        cam.GetUniversalAdditionalCameraData().cameraStack.Clear();
-      }
+        if (IsURP() && disableOverlayCameras)
+        {
+          cam.GetUniversalAdditionalCameraData().cameraStack.Clear();
+        }
 #endif
       }
       else

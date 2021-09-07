@@ -25,6 +25,7 @@ namespace ChocoMintSoftworks.ScreenshotBuddy
     public static int selectedMsaaSamples = 3;
     public static string userFilePrefix = "screenshot";
 
+    public static string screenshotFolder = "../Screenshots/";
     public static bool enableTransparency = false;
     public static string[] superSampleOptions = new string[] { "1x", "2x", "3x", "4x" };
     public static int selectedSuperSample = 0;
@@ -84,6 +85,15 @@ namespace ChocoMintSoftworks.ScreenshotBuddy
       GUILayout.EndHorizontal();
 
       GUILayout.BeginHorizontal();
+      GUILayout.Label("Screenshot Path:", EditorStyles.label);
+      screenshotFolder = GUILayout.TextField(screenshotFolder, 256);
+      if (GUILayout.Button("Browse", GUILayout.ExpandWidth(false)))
+      {
+        screenshotFolder = PickScreenshotFolder();
+      }
+      GUILayout.EndHorizontal();
+
+      GUILayout.BeginHorizontal();
       if (GUILayout.Button("Take Screenshot", GUILayout.ExpandWidth(false)))
       {
         Screenshot();
@@ -96,7 +106,12 @@ namespace ChocoMintSoftworks.ScreenshotBuddy
       {
         ToggleCameraMode();
       }
+      if (GUILayout.Button("Reset Path", GUILayout.ExpandWidth(false)))
+      {
+        ResetScreenshotPath();
+      }
       GUILayout.EndHorizontal();
+
       GUILayout.Label("Resolution Presets", EditorStyles.boldLabel);
       GUILayout.BeginHorizontal();
       if (GUILayout.Button("1080p", GUILayout.ExpandWidth(false)))
@@ -147,12 +162,11 @@ namespace ChocoMintSoftworks.ScreenshotBuddy
 
     static void OpenScreenshotFolder()
     {
-      string path = @".\Screenshots\";
-      if (!Directory.Exists(path))
+      if (!Directory.Exists(screenshotFolder))
       {
-        Directory.CreateDirectory(path);
+        Directory.CreateDirectory(screenshotFolder);
       }
-      EditorUtility.RevealInFinder(path);
+      EditorUtility.RevealInFinder(screenshotFolder);
     }
 
     static void Screenshot()
@@ -162,9 +176,6 @@ namespace ChocoMintSoftworks.ScreenshotBuddy
 
     public static bool CaptureEditorScreenshot(string filePrefix)
     {
-      string screenshotFolder = Path.Combine(Application.dataPath, "../Screenshots/");
-      screenshotFolder = Path.GetFullPath(screenshotFolder);
-
       if (!Directory.Exists(screenshotFolder))
       {
         Directory.CreateDirectory(screenshotFolder);
@@ -404,7 +415,7 @@ namespace ChocoMintSoftworks.ScreenshotBuddy
       Graphics.Blit(null, renderTexture, material);
 
       Texture2D texture = new Texture2D(resolution.x, resolution.y, TextureFormat.ARGB32, false);
-      texture.filterMode = FilterMode.Bilinear;
+      texture.filterMode = FilterMode.Trilinear;
       texture.wrapMode = TextureWrapMode.Clamp;
       RenderTexture.active = renderTexture;
       texture.ReadPixels(new Rect(Vector2.zero, resolution), 0, 0);
@@ -432,6 +443,17 @@ namespace ChocoMintSoftworks.ScreenshotBuddy
     {
       string assetTypeURP = "UniversalRenderPipelineAsset";
       return GraphicsSettings.renderPipelineAsset.GetType().Name.Contains(assetTypeURP);
+    }
+
+    private static string PickScreenshotFolder()
+    {
+      string path = EditorUtility.OpenFolderPanel("Save screenshots to", screenshotFolder, "");
+      return path + "/";
+    }
+
+    private static void ResetScreenshotPath()
+    {
+      screenshotFolder = Path.GetFullPath(Path.Combine(Application.dataPath, "../Screenshots/"));
     }
 
     private static string SettingsPrefix()
@@ -472,7 +494,8 @@ namespace ChocoMintSoftworks.ScreenshotBuddy
       return loadedColor;
     }
 
-    private static void SaveAllSettings() {
+    private static void SaveAllSettings()
+    {
       SaveInt("resWidth", resWidth);
       SaveInt("resHeight", resHeight);
       SaveInt("jpgQuality", jpgQuality);
@@ -483,9 +506,11 @@ namespace ChocoMintSoftworks.ScreenshotBuddy
       SaveBool("enableTransparency", enableTransparency);
       SaveString("userFilePrefix", userFilePrefix);
       SaveColor("overlayColor", overlayColor);
+      SaveString("screenshotFolder", screenshotFolder);
     }
 
-    private static void LoadAllSettings() {
+    private static void LoadAllSettings()
+    {
       resWidth = EditorPrefs.GetInt(SettingsPrefix() + "resWidth", 1920);
       resHeight = EditorPrefs.GetInt(SettingsPrefix() + "resHeight", 1080);
       jpgQuality = EditorPrefs.GetInt(SettingsPrefix() + "jpgQuality", 100);
@@ -496,6 +521,7 @@ namespace ChocoMintSoftworks.ScreenshotBuddy
       enableTransparency = EditorPrefs.GetBool(SettingsPrefix() + "enableTransparency", false);
       userFilePrefix = EditorPrefs.GetString(SettingsPrefix() + "userFilePrefix", "screenshot");
       overlayColor = LoadColor("overlayColor");
+      screenshotFolder = EditorPrefs.GetString(SettingsPrefix() + "screenshotFolder", Path.GetFullPath(Path.Combine(Application.dataPath, "../Screenshots/")));
     }
   }
 }

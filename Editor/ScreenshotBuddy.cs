@@ -95,6 +95,7 @@ namespace ChocoMintSoftworks.ScreenshotBuddy
       GUILayout.EndHorizontal();
 
       GUILayout.BeginHorizontal();
+      GUI.SetNextControlName("screenshotButton");
       if (GUILayout.Button("Take Screenshot", GUILayout.ExpandWidth(false)))
       {
         Screenshot();
@@ -323,6 +324,7 @@ namespace ChocoMintSoftworks.ScreenshotBuddy
 
     public static void SetResolutionPreset(int width, int height)
     {
+      GUI.FocusControl("screenshotButton");
       resWidth = width;
       resHeight = height;
     }

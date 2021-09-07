@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq;
 using System;
 using System.IO;
 using System.Collections.Generic;
@@ -166,7 +167,12 @@ namespace ChocoMintSoftworks.ScreenshotBuddy
       {
         Directory.CreateDirectory(screenshotFolder);
       }
-      EditorUtility.RevealInFinder(screenshotFolder);
+
+      string firstFile = Directory.EnumerateFiles(screenshotFolder).FirstOrDefault();
+      if (!string.IsNullOrEmpty(firstFile))
+        EditorUtility.RevealInFinder(Path.Combine(screenshotFolder, firstFile));
+      else
+        EditorUtility.RevealInFinder(screenshotFolder);
     }
 
     static void Screenshot()
